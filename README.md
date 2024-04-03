@@ -71,4 +71,9 @@ then:
 
 ### Problems
 
-I did find that MS Edge isn't showing and haven't looked into why yet
+I can't get edge to show up in the list of bundleIDs. Haven't digged into why, but you can still set it by entering:
+
+```swift
+  // whatever the build name is 
+  ./browser edge
+```
