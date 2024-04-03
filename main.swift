@@ -34,6 +34,7 @@ func setDefaultHandler(urlScheme: String, handlerBundleId: String) {
 let arguments = CommandLine.arguments
 let target = arguments.count == 1 ? "" : arguments[1].lowercased()
 
+let edgeCanaryBundleId = "com.microsoft.edgemac.Canary"
 let handlers = getHTTPHandlers()
 let currentHandlerName = getCurrentHTTPHandler()
 
@@ -49,7 +50,8 @@ if target.isEmpty {
         setDefaultHandler(urlScheme: "http", handlerBundleId:targetHandler)
         setDefaultHandler(urlScheme: "https", handlerBundleId: targetHandler)
     } else {
-        print("\(target) is not available as an HTTP handler")
-        exit(1)
+        setDefaultHandler(urlScheme: "http", handlerBundleId: "com.microsoft.edgemac.Canary")
+        setDefaultHandler(urlScheme: "https", handlerBundleId: "com.microsoft.edgemac.Canary")
+        print("Attempted to set MS Edge as the default browser")
     }
 }
