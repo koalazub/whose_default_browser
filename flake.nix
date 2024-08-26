@@ -1,56 +1,39 @@
 {
-  description = "WhoseDefaultBrowser Swift project package";
+  description = "WhoseDefaultBrowser Swift project";
 
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/master";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
   };
 
   outputs = { self, nixpkgs }:
     let
-      supportedSystems =
-        [ "x86_64-linux" "x86_64-darwin" "aarch64-linux" "aarch64-darwin" ];
-
+      supportedSystems = [ "x86_64-darwin" "aarch64-darwin" ];
       forAllSystems = nixpkgs.lib.genAttrs supportedSystems;
-
       nixpkgsFor = forAllSystems (system: import nixpkgs { inherit system; });
-
-      buildWhoseDefaultBrowser = { system }:
-        let
+    in
+    {
+      packages = forAllSystems (system:
+        let 
           pkgs = nixpkgsFor.${system};
-        in pkgs.stdenv.mkDerivation {
-          name = "WhoseDefaultBrowser";
-          src = ./.;
-          buildInputs = with pkgs; [ swift ];
-
-          buildPhase = ''
-            swiftc -o $name WhoseDefaultBrowser.swift
-          '';
-
-          installPhase = ''
-            mkdir -p $out/bin
-            mv WhoseDefaultBrowser $out/bin/
-          '';
-        };
-      
-    in {
-      packages = forAllSystems (system: {
-        WhoseDefaultBrowser = buildWhoseDefaultBrowser { inherit system; };
-      });
-
-      devShells = forAllSystems (system:
-        let pkgs = nixpkgsFor.${system};
         in {
-          default = pkgs.mkShell {
-            buildInputs = with pkgs; [
-              swift
-            ];
-
-            shellHook = ''
-              echo "Development environment for WhoseDefaultBrowser is ready."
-              echo "Swift version: $(swift --version)"
+          WhoseDefaultBrowser = pkgs.stdenvNoCC.mkDerivation {
+            pname = "WhoseDefaultBrowser";
+            version = "1.0.0";
+            src = ./.;
+            buildInputs = [ pkgs.darwin.apple_sdk.frameworks.CoreServices ];
+            buildPhase = ''
+              export PATH=$PATH:/usr/bin:/usr/local/bin
+              export SDKROOT=$(xcrun --show-sdk-path)
+              export MACOSX_DEPLOYMENT_TARGET=10.15
+              xcrun swiftc -o WhoseDefaultBrowser main.swift
+            '';
+            installPhase = ''
+              mkdir -p $out/bin
+              install -D WhoseDefaultBrowser $out/bin/WhoseDefaultBrowser
             '';
           };
-        });
+        }
+      );
 
       defaultPackage = forAllSystems (system: self.packages.${system}.WhoseDefaultBrowser);
     };
