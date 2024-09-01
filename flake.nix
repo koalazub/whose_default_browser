@@ -16,7 +16,7 @@
         let 
           pkgs = nixpkgsFor.${system};
         in {
-          WhoseDefaultBrowser = pkgs.stdenvNoCC.mkDerivation {
+          default = pkgs.stdenvNoCC.mkDerivation {
             pname = "WhoseDefaultBrowser";
             version = "1.0.0";
             src = ./.;
@@ -34,7 +34,5 @@
           };
         }
       );
-
-      defaultPackage = forAllSystems (system: self.packages.${system}.WhoseDefaultBrowser);
     };
 }
