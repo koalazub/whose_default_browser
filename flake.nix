@@ -31,10 +31,19 @@
             };
             buildInputs = [ pkgs.darwin.apple_sdk.frameworks.CoreServices ];
             buildPhase = ''
-              export PATH=$PATH:/usr/bin:/usr/local/bin
-              export SDKROOT=$(xcrun --show-sdk-path)
-              export MACOSX_DEPLOYMENT_TARGET=10.15
-              xcrun swiftc -o WhoseDefaultBrowser main.swift
+              export PATH="/usr/bin:/usr/local/bin:$PATH"
+
+              # Use the latest SDK and Swift from the system's Xcode
+              export SDKROOT=$(/usr/bin/xcrun --sdk macosx --show-sdk-path)
+              export DEVELOPER_DIR=$(/usr/bin/xcode-select -p)
+              export MACOSX_DEPLOYMENT_TARGET=15.0
+
+              # Use xcodebuild for compilation (compatible with macOS 26+ Xcode)
+              /usr/bin/xcrun --sdk macosx swiftc \
+                -o WhoseDefaultBrowser \
+                -sdk "$SDKROOT" \
+                -target ${if system == "aarch64-darwin" then "arm64" else "x86_64"}-apple-macosx15.0 \
+                main.swift
             '';
             installPhase = ''
               mkdir -p $out/bin
